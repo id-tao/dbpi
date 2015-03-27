@@ -9,7 +9,6 @@ Script will help install Drupal base package.<br>
 <p>
 <b>Modules</b>
 </p>
-
 <ul>
 <li>GLOBALREDIRECT</li>
 <li>ADMIN MENU</li>
@@ -27,7 +26,6 @@ Script will help install Drupal base package.<br>
 <li>TRANSLITERATION</li>
 <li>SUBPATHAUTO</li>
 </ul>
-
 <h2>Instruction</h2>
 <ul>
 <li>Copy <b>install_dbp.sh</b> file</li>

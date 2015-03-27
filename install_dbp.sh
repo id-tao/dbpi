@@ -173,7 +173,6 @@ mkdir sites/all/modules/contrib
 mkdir sites/all/libraries
 mkdir sites/default/files
 chmod 777 -R sites/default/files
-
 cp sites/default/default.settings.php sites/default/settings.php
 
 echo '$databases = array (' >> sites/default/settings.php
