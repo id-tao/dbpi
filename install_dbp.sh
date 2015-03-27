@@ -231,7 +231,9 @@ do
     echo
   fi
 done
-
+chmod 777 -R .git
+chmod 777 .gitignore
+chmod 777 .gitmodules
 cd htdocs/
 drush dis color toolbar shortcut rdf update_manager
 drush en ctools token metatag views views_ui admin_menu admin_menu_toolbar elysia_cron pathauto page_manager ctools_custom_content imce wysiwyg wysiwyg_filter globalredirect transliteration subpathauto
