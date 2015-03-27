@@ -30,14 +30,14 @@ Script will help install Drupal base package.<br>
 
 <h2>Instruction</h2>
 <ul>
-<li>Copy <b>install_dbp.sh</b> file to home directory</li>
-<li>Run cmd and use</li>
+<li>Copy <b>install_dbp.sh</b> file</li>
+<li>Run cmd</li>
 <li>Go to directory where you want install Drupal site.<br>
   use <b>cd</b> [path to site directory]<br>
   //Add permissions for script<br>
-  <b>$ chmod +x ~/install_dbp.sh</b><br>
+  <b>$ sudo chmod +x /path/to/script/folder/dbpi/install_dbp.sh</b><br>
   //Run script<br>
-  <b>$ ~/install_dbp.sh</b></li>
+  <b>$ sudo /path/to/script/folder/dbpi/install_dbp.sh</b></li>
  <li>Follow the instructions in cmd.</li>
  <li>The result is fully working drupal website with all modules, and git repository, with "master" and "dev" branches in your current directory. You have to add "git commit" only.</li>
 </ul>
