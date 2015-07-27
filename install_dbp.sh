@@ -2,41 +2,40 @@
 
 #SCRIPT SETINGS [17.03.2015]
 #DRUPAL VERSION
-DRUPAL='7.34'
+DRUPAL='7.38'
 
 #MODULES VERSIONS
-
+declare -a VERSIONS
 #https://www.drupal.org/project/globalredirect/git-instructions
-GLOBALREDIRECT='7.x-1.x'
+VERSIONS[1]='7.x-1.x'
 #https://www.drupal.org/project/admin_menu/git-instructions
-ADMIN_MENU='7.x-3.x'
+VERSIONS[2]='7.x-3.x'
 #https://www.drupal.org/project/ctools/git-instructions
-CTOOLS='7.x-1.x'
+VERSIONS[3]='7.x-1.x'
 #https://www.drupal.org/project/token/git-instructions
-TOKEN='7.x-1.x'
+VERSIONS[4]='7.x-1.x'
 #https://www.drupal.org/project/views/git-instructions
-VIEWS='7.x-3.x'
+VERSIONS[5]='7.x-3.x'
 #https://www.drupal.org/project/pathauto/git-instructions
-PATHAUTO='7.x-1.x'
+VERSIONS[6]='7.x-1.x'
 #https://www.drupal.org/project/google_analytics/git-instructions
-GOOGLE_ANALYTICS='7.x-2.x'
+VERSIONS[7]='7.x-2.x'
 #https://www.drupal.org/project/xmlsitemap/git-instructions
-XMLSITEMAP='7.x-2.x'
+VERSIONS[8]='7.x-2.x'
 #https://www.drupal.org/project/elysia_cron/git-instructions
-ELYSIA_CRON='7.x-2.x'
+VERSIONS[9]='7.x-2.x'
 #https://www.drupal.org/project/metatag/git-instructions
-METATAG='7.x-1.x'
+VERSIONS[10]='7.x-1.x'
 #https://www.drupal.org/project/wysiwyg/git-instructions
-WYSIWYG='7.x-2.x'
+VERSIONS[11]='7.x-2.x'
 #https://www.drupal.org/project/imce/git-instructions
-IMCE='7.x-1.x'
+VERSIONS[12]='7.x-1.x'
 #https://www.drupal.org/project/wysiwyg_filter/git-instructions
-WYSIWYG_FILTER='7.x-1.x'
+VERSIONS[14]='7.x-1.x'
 #https://www.drupal.org/project/transliteration/git-instructions
-TRANSLITERATION='7.x-3.x'
+VERSIONS[15]='7.x-3.x'
 #https://www.drupal.org/project/subpathauto/git-instructions
-SUBPATHAUTO='7.x-1.x'
-#TINYMCE='4.1.9'
+VERSIONS[16]='7.x-1.x'
 
 read -n 1 -p "Drupal base package will be installed. Are you sure? (y/n): " AMSURE
 if [ "$AMSURE" = "y" ]; then
@@ -63,7 +62,9 @@ do
   fi
 done
 rm ls.tmp
-rm README.txt
+if [ -f "README.txt" ]; then
+  rm README.txt
+fi
 GIT=".git/config"
 if [ -f $GIT ]; then
   echo "GIT INIT - OK"
@@ -73,48 +74,89 @@ else
 fi
 echo
 echo "===============SITE SETTINGS==============="
-echo "Project name"
-read NAME
-echo $NAME >> README.txt
-echo "Site administrator login"
-read SANAME
-echo "Taks number in lab"
-read TASK
-if [ $TASK == "" ]; then
-  $TASK=1
-fi
+NAME=''
+while [ "$NAME" == '' ]
+do
+  echo "Enter project name:"
+  read NAME
+  echo $NAME >> README.txt
+done
+SANAME=''
+while [ "$SANAME" == '' ]
+do
+  echo "Enter Site administrator login:"
+  read SANAME
+done
+TASK=''
+while [ "$TASK" == '' ]
+do
+  echo "Enter Taks number in lab:"
+  read TASK
+done
 echo
 echo "===============DB SETTINGS==============="
-echo "DB name"
-read DBNAME
-echo "DB login"
-read LOGIN
-echo "DB pass"
-PASSWORD=""
-while
-read -s -n1 BUFF
-[[ -n $BUFF ]]
+DBNAME=''
+while [ "$DBNAME" == '' ]
 do
+  echo "Enter DB name (Will be created a new database or will be update old database):"
+  read DBNAME
+done
+# echo "Enter DB login:"
+# read LOGIN
+LOGIN=''
+while [ "$LOGIN" == '' ]
+do
+  echo "Enter DB login:"
+  read LOGIN
+done
+
+PASSWORD=''
+while [ "$PASSWORD" == '' ]
+do
+  echo "Enter DB pass:"
+  PASSWORD=""
+  while
+  read -s -n1 BUFF
+  [[ -n $BUFF ]]
+  do
     # 127 - backspace ascii code
     if [[ `printf "%d\n" \'$BUFF` == 127 ]]
     then
-  PASSWORD="${PASSWORD%?}"
-  echo -en "\b \b"
+      PASSWORD="${PASSWORD%?}"
+      echo -en "\b \b"
     else
-  PASSWORD=$PASSWORD$BUFF
-  echo -en "*"
+      PASSWORD=$PASSWORD$BUFF
+      echo -en "*"
     fi
+  done
 done
 echo
-
 git add README.txt
 git commit -m "Task #$TASK: Initial commit"
 git checkout -b dev
 git rm README.txt
 git submodule add https://github.com/InternetDevels/drupal-core.git htdocs
 
+CORE="htdocs/README.md"
+
+if [ ! -f $CORE ]; then
+  echo "Cannot download drupal core, try again"
+  rm -R htdocs
+  rm -R .git
+  rm .gitmodules
+  exit 0
+fi
+
 wget http://ftp.drupal.org/files/projects/drupal-$DRUPAL.tar.gz
 tar xvzf drupal-$DRUPAL.tar.gz
+if [ ! -f "drupal-$DRUPAL/sites/default/default.settings.php" ]; then
+  echo "Cannot download drupal files, try again"
+  rm -R htdocs
+  rm -R .git
+  rm .gitmodules
+  rm drupal-$DRUPAL.tar.gz
+  exit 0
+fi
 rm drupal-$DRUPAL.tar.gz
 cd drupal-$DRUPAL
 cp -R sites ../sites
@@ -168,26 +210,32 @@ rm .htaccess
 cd htdocs/
 git checkout 7.x
 ln -s ../sites
-drush site-install standard --account-name=$SANAME --account-pass=$PASSWORD --db-url=mysql://$LOGIN:$PASSWORD@localhost:/$DBNAME
+drush site-install standard --account-name=$SANAME --account-pass=$PASSWORD --db-url=mysql://$LOGIN:$PASSWORD@localhost:/$DBNAME -y
 cd ../
-git submodule add --branch $GLOBALREDIRECT http://git.drupal.org/project/globalredirect.git sites/all/modules/contrib/globalredirect
-git submodule add --branch $ADMIN_MENU http://git.drupal.org/project/admin_menu.git sites/all/modules/contrib/admin_menu
-git submodule add --branch $CTOOLS http://git.drupal.org/project/ctools.git sites/all/modules/contrib/ctools
-git submodule add --branch $TOKEN http://git.drupal.org/project/token.git sites/all/modules/contrib/token
-git submodule add --branch $VIEWS http://git.drupal.org/project/views.git sites/all/modules/contrib/views
-git submodule add --branch $PATHAUTO http://git.drupal.org/project/pathauto.git sites/all/modules/contrib/pathauto
-git submodule add --branch $GOOGLE_ANALYTICS http://git.drupal.org/project/google_analytics.git sites/all/modules/contrib/google_analytics
-git submodule add --branch $XMLSITEMAP http://git.drupal.org/project/xmlsitemap.git sites/all/modules/contrib/xmlsitemap
-git submodule add --branch $ELYSIA_CRON http://git.drupal.org/project/elysia_cron.git sites/all/modules/contrib/elysia_cron
-git submodule add --branch $METATAG http://git.drupal.org/project/metatag.git sites/all/modules/contrib/metatag
-git submodule add --branch $WYSIWYG http://git.drupal.org/project/wysiwyg.git sites/all/modules/contrib/wysiwyg
-git submodule add --branch $IMCE http://git.drupal.org/project/imce.git sites/all/modules/contrib/imce
-git submodule add --branch $WYSIWYG_FILTER http://git.drupal.org/project/wysiwyg_filter.git sites/all/modules/contrib/wysiwyg_filter
-git submodule add --branch $TRANSLITERATION http://git.drupal.org/project/transliteration.git sites/all/modules/contrib/transliteration
-git submodule add --branch $SUBPATHAUTO http://git.drupal.org/project/subpathauto.git sites/all/modules/contrib/subpathauto
+echo
+echo '============== INSTALLING MODULES ==============='
+echo
+DMODULES="globalredirect admin_menu ctools token views pathauto google_analytics xmlsitemap elysia_cron metatag wysiwyg imce wysiwyg_filter transliteration subpathauto"
+MODNUM=0
+for MOD in $DMODULES
+do
+  MODNUM=$MODNUM+1
+  echo "[$MOD]"
+  echo "submodule add --branch ${VERSIONS[$MODNUM]} http://git.drupal.org/project/$MOD.git sites/all/modules/contrib/$MOD"
+  git submodule add --branch ${VERSIONS[$MODNUM]} http://git.drupal.org/project/$MOD.git sites/all/modules/contrib/$MOD
+  if [[ -f "sites/all/modules/contrib/$MOD/$MOD.module" || -f "sites/all/modules/contrib/$MOD/README.txt" || -f "sites/all/modules/contrib/$MOD/$MOD.info" ]]
+  then
+    echo
+  else
+    echo
+    echo "Cannot download $MOD module"
+    echo
+  fi
+done
+
 cd htdocs/
-drush dis color toolbar shortcut rdf update_manager
-drush en ctools token metatag views views_ui admin_menu admin_menu_toolbar elysia_cron pathauto page_manager ctools_custom_content imce wysiwyg wysiwyg_filter globalredirect transliteration subpathauto
+drush dis color toolbar shortcut rdf update_manager -y
+drush en ctools token metatag views views_ui admin_menu admin_menu_toolbar elysia_cron pathauto page_manager ctools_custom_content imce wysiwyg wysiwyg_filter globalredirect transliteration subpathauto -y
 drush cc all
 cd ../
 echo
