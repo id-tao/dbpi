@@ -1,10 +1,10 @@
 <h1>Drupal base package installer</h1>
 
 Script will help install Drupal base package.<br>
-<i>Version 1.0</i>
+<i>Version 1.5</i>
 
 <p>
-<b>Drupal core - 7.34</b>
+<b>Drupal core - 7.39</b>
 </p>
 <p>
 <b>Modules</b>
