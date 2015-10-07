@@ -2,7 +2,7 @@
 
 #SCRIPT SETINGS [17.03.2015]
 #DRUPAL VERSION
-DRUPAL='7.38'
+DRUPAL='7.39'
 
 #MODULES VERSIONS
 declare -a VERSIONS
@@ -192,18 +192,6 @@ echo "    )," >> sites/default/settings.php
 echo "  )," >> sites/default/settings.php
 echo ");" >> sites/default/settings.php
 
-echo "# Ignore configuration files that may contain sensitive information." >> .gitignore
-echo "sites/*/settings*.php" >> .gitignore
-echo "" >> .gitignore
-echo "# Ignore paths that contain user-generated content." >> .gitignore
-echo "sites/*/files" >> .gitignore
-echo "sites/*/private" >> .gitignore
-echo "robots.txt" >> .gitignore
-echo "*.htaccess" >> .gitignore
-echo "*.html" >> .gitignore
-echo "*.sql" >> .gitignore
-echo "*.sass-cache" >> .gitignore
-git add .gitignore
 git add sites/default/
 cp .htaccess htdocs/.htaccess
 rm .htaccess
@@ -232,12 +220,33 @@ do
     echo
   fi
 done
-
+sed -e 's/dependencies\[\]\s\=\stoken/;\ dependencies[]\ =\ token/' -i "sites/all/modules/contrib/metatag/metatag.info"
 cd htdocs/
 drush dis color toolbar shortcut rdf update_manager -y
 drush en ctools token metatag views views_ui admin_menu admin_menu_toolbar elysia_cron pathauto page_manager ctools_custom_content imce wysiwyg wysiwyg_filter globalredirect transliteration subpathauto -y
 drush cc all
 cd ../
+
+echo "# Ignore configuration files that may contain sensitive information." >> .gitignore
+echo "sites/default/*settings.php" >> .gitignore
+echo "" >> .gitignore
+echo "# Ignore paths that contain user-generated content." >> .gitignore
+echo "sites/*/files" >> .gitignore
+echo "sites/*/private" >> .gitignore
+echo "robots.txt" >> .gitignore
+echo "*.htaccess" >> .gitignore
+echo "*.html" >> .gitignore
+echo "*.sql" >> .gitignore
+echo "*.sass-cache" >> .gitignore
+git add .gitignore
+sed -e 's/\;\sdependencies/dependencies/' -i "sites/all/modules/contrib/metatag/metatag.info"
+
+chmod 777 htdocs
+chmod 777 sites
+chmod 777 .git
+chmod 777 .gitignore
+chmod 777 .gitmodules
+
 echo
 echo '========INSTALLATION COMPLETE========'
 echo 'Your login - '$SANAME
